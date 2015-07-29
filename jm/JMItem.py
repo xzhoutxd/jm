@@ -50,7 +50,7 @@ class Item():
         self.item_isLock_time = None # 抓到锁定的时间
         self.item_type_s = '' # 商品抓取到的属性 'retail_global' 'global' 'product' 
         self.item_type = '' # 商品属性是否是'global' 'product'
-        self.item_category_id = 0 # 商品所属分类id
+        self.item_category_id = 0 # 商品所属分类id 尽量下级分类
         self.item_category_name = '' # 商品所属分类name
         self.item_category_v3_1 = 0 # 
         self.item_mname = '' # 商品长名称
@@ -164,6 +164,23 @@ class Item():
                         else:
                             self.item_type = 'product'
 
+    def itemDealcontent(self, dealcontent):
+        if dealcontent and dealcontent != '':
+            info = re.sub(r'&nbsp;','',dealcontent)
+            if not self.item_brand_name or self.item_brand_name == '':
+                m = re.search(r'品牌.+?</td>\s+<td>(.+?)</td>', info, flags=re.S)
+                if m:
+                    brand_name = m.group(1)
+                    if brand_name != '':
+                        self.item_brand_name = re.sub(r'<.+?>','',brand_name)
+                
+            if not self.item_category_name or self.item_category_name == '':
+                m = re.search(r'分类.+?</td>\s+<td>(.+?)</td>', info, flags=re.S)
+                if m:
+                    category_name = m.group(1)
+                    if category_name != '':
+                        self.item_category_name = re.sub(r'<.+?>','',category_name)
+
     def itemGlobal(self):
         page = self.item_page
         m = re.search(r'(<input type="hidden" id="stream_id".+?>)', page, flags=re.S)
@@ -176,6 +193,7 @@ class Item():
             self.item_product_id = m.group(1)
         m = re.search(r'<input type="hidden" id="stream_id".+?search_category_id="(.+?)".+?>', stream_s, flags=re.S)
         if m:
+            self.item_category_id = m.group(1)
             item_search_category_id = m.group(1)
         m = re.search(r'<input type="hidden" id="stream_id".+?search_brand_id="(.+?)".+?>', stream_s, flags=re.S)
         if m:
@@ -205,6 +223,16 @@ class Item():
             if m:
                 self.item_desc = re.sub(r'<.+?>','',m.group(1).strip())
 
+        dealcontent = ''
+        m = re.search(r'<div id="spxx".+?>.+?<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
+        if m:
+            dealcontent = m.group(1)
+        else:
+            m = re.search(r'<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
+            if m:
+                dealcontent = m.group(1)
+
+        self.itemDealcontent(dealcontent)
         self.itemGlobalDealinfo()
 
     def itemGlobalDealinfo(self):
@@ -350,6 +378,16 @@ class Item():
             if m:
                 self.item_desc = m.group(1).strip()
 
+        dealcontent = ''
+        m = re.search(r'<div id="product_parameter".+?>.+?<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
+        if m:
+            dealcontent = m.group(1)
+        else:
+            m = re.search(r'<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
+            if m:
+                dealcontent = m.group(1)
+
+        self.itemDealcontent(dealcontent)
         self.itemProductDealinfo()
         self.itemProductKoubei()
 
@@ -685,10 +723,8 @@ def test():
 if __name__ == '__main__':
     print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     i = Item()
-    val = (7970, '\xe6\x97\xa5\xe7\xb3\xbb\xe4\xb8\xaa\xe6\x8a\xa4\xe5\x9b\xa2', 'http://hd.jumei.com/act/ppt_tsubaki_150722.html?from=beauty_onsale_n2_7970_pos1', {'original_price': '148', 'discounted_price': '148', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 0, 'promo_sale_text': {'reduce': [{'show_name': u'\u8d44\u751f\u5802\u83f2\u5a77\u54c1\u724c\u56e2\u6ee1199\u51cf100 \u9650\u9996\u5355', 'site': 'all'}]}, 'product_report_rating': '0.0', 'brand_id': '1445', 'sellable': 1, 'pic_url': 'http://p4.jmstatic.com/product/000/505/505454_std/505454_350_350.jpg', 'category': 'product', 'commission_rate': '0.0000', 'chinese_name': u'\u8d44\u751f\u5802\u83f2\u5a77', 'category_v3_1': '107', 'promo': 'new', 'medium_name': u'\u4e1d\u84d3\u7eee\u5962\u8000\u67d4\u8273\u6d17\u53d1\u9732750ml\xd72\uff0c\u6fc0\u53d1\u7f8e\u4e3d\u7684\u6f5c\u80fd\uff0c\u4ee4\u79c0\u53d1\u67d4\u987a\u5149\u8273\u3002', 'hash_id': 'd150722p505454zc', 'status': '1', 'sku_min_price': '0.00', 'payment_end_time': '0', 'real_buyer_number': '148', 'short_name': u'\u4e1d\u84d3\u7eee\u5962\u8000\u67d4\u8273\u6d17\u53d1\u9732750ml\xd72', 'wish_number': '396', 'start_time': '1437530400', 'discount': '10', 'sale_forms': 'normal', 'aca': 0, 'is_published_price': '1', 'product_id': '505454', 'product_reports_number': '0', 'friendly_name': u'\u8d44\u751f\u5802\u83f2\u5a77', 'is_exist_225': 0, 'end_time': '1437789599', 'category_id': '13', 'is_stock_split': '1', 'buyer_number': '8313'}, 'd150722p505454zc', u'\u4e1d\u84d3\u7eee\u5962\u8000\u67d4\u8273\u6d17\u53d1\u9732750ml\xd72\uff0c\u6fc0\u53d1\u7f8e\u4e3d\u7684\u6f5c\u80fd\uff0c\u4ee4\u79c0\u53d1\u67d4\u987a\u5149\u8273\u3002', 'http://item.jumei.com/d150722p505454zc.html?from=ppt_tsubaki_150722_pos_1_101&status=zs', 22, Common.now())
-    val = (8318, '\xe9\x98\xb2\xe6\x99\x92\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_fangshai_150721.html?from=beauty_onsale_n2_8318_pos1', {'original_price': '0', 'discounted_price': '199', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 1, 'promo_sale_text': [], 'product_report_rating': '5.0', 'brand_id': '7744', 'is_stock_split': '0', 'pic_url': 'http://p0.jmstatic.com/product/001/577/1577810_std/1577810_350_350.jpg', 'category': 'retail_global', 'commission_rate': '0.0000', 'chinese_name': u'\u5b89\u8010\u6652', 'category_v3_1': '107', 'sku_max_market_price': '289', 'min_discount': 6.9, 'medium_name': u'Anessa \u9ec4\u91d1\u6c34\u94bb\u9632\u6652\u4e73\u5957\u88c5\uff082015\u9650\u5b9a\u7248\uff09\uff0c\u4eba\u6c14\u5927\u7206\u6b3e\u7ec4\u5408\u6765\u88ad\u3002', 'hash_id': 'ht150721p1577810t2', 'status': '1', 'sku_min_price': '199.00', 'payment_end_time': '0', 'real_buyer_number': '5276', 'short_name': u'Anessa \u9ec4\u91d1\u6c34\u94bb\u9632\u6652\u4e73\u5957\u88c5', 'wish_number': '12333', 'start_time': '1437444000', 'baoyou': 0, 'discount': '0', 'sale_forms': 'normal', 'sellable': 1, 'spu_area_code': '19', 'aca': 0, 'is_published_price': '1', 'promo': 'new', 'product_id': '1577810', 'product_reports_number': '2', 'friendly_name': u'\u5b89\u8010\u6652(ANESSA)', 'is_exist_225': 0, 'end_time': '1438099199', 'category_id': '33', 'spu_abroad_price': '1.00', 'buyer_number': '38526'}, 'ht150721p1577810t2', u'Anessa \u9ec4\u91d1\u6c34\u94bb\u9632\u6652\u4e73\u5957\u88c5\uff082015\u9650\u5b9a\u7248\uff09\uff0c\u4eba\u6c14\u5927\u7206\u6b3e\u7ec4\u5408\u6765\u88ad\u3002', 'http://item.jumeiglobal.com/ht150721p1577810t2.html?from=plt_fangshai_150721_pos_1_111&status=zs', 21, Common.now())
-    val = (8540, 'SK-\xe2\x85\xa1\xe5\x93\x81\xe7\x89\x8c\xe5\x9b\xa2', 'http://hd.jumei.com/act/ppt_SKII_150725.html?from=beauty_onsale_n2_8540_pos2', {'original_price': '2450', 'discounted_price': '1399', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 0, 'promo_sale_text': [], 'product_report_rating': '5.0', 'brand_id': '596', 'sellable': 1, 'pic_url': 'http://p0.jmstatic.com/product/000/517/517910_std/517910_350_350.jpg', 'category': 'product', 'commission_rate': '0.0000', 'chinese_name': 'SK-II', 'category_v3_1': '107', 'promo': 'new', 'medium_name': u'SK-II\u808c\u6e90\u4fee\u62a4\u5957\u88c5\uff0c\u9006\u8f6c\u65f6\u5149\uff0c\u5e26\u52a8\u5168\u7403\u5973\u6027\u8fc8\u5165\u6297\u8001\u65b0\u7eaa\u5143\uff01', 'hash_id': 'd150725p517910zc', 'status': '1', 'sku_min_price': '0.00', 'payment_end_time': '0', 'real_buyer_number': '10', 'short_name': u'SK-II\u808c\u6e90\u4fee\u62a4\u5957\u88c5', 'wish_number': '785', 'start_time': '1437789600', 'discount': '5.7', 'sale_forms': 'normal', 'aca': 0, 'is_published_price': '1', 'product_id': '517910', 'product_reports_number': '1', 'friendly_name': 'SK-II', 'is_exist_225': 0, 'end_time': '1438048799', 'category_id': '23', 'is_stock_split': '1', 'buyer_number': '1739'}, 'd150725p517910zc', u'SK-II\u808c\u6e90\u4fee\u62a4\u5957\u88c5\uff0c\u9006\u8f6c\u65f6\u5149\uff0c\u5e26\u52a8\u5168\u7403\u5973\u6027\u8fc8\u5165\u6297\u8001\u65b0\u7eaa\u5143\uff01', 'http://item.jumei.com/d150725p517910zc.html?from=ppt_SKII_150725_pos_2_31&status=zs', 14, Common.now())
-
+    val = (8830, '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', '', 'ht150730p1608006t2', '', 'http://item.jumeiglobal.com/ht150730p1608006t2.html?from=plt_ribenkouqiang_150730_pos_2', 1, Common.now())
+    val = (8830, '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', {'original_price': '0', 'discounted_price': '39', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 1, 'promo_sale_text': [], 'product_report_rating': '5.0', 'brand_id': '3428', 'is_stock_split': '0', 'pic_url': 'http://p1.jmstatic.com/product/001/608/1608006_std/1608006_350_350.jpg', 'category': 'retail_global', 'commission_rate': '0.0000', 'chinese_name': u'\u72ee\u738b', 'category_v3_1': '107', 'sku_max_market_price': '89', 'min_discount': 4.4, 'medium_name': u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'hash_id': 'ht150730p1608006t2', 'status': '1', 'sku_min_price': '39.00', 'payment_end_time': '0', 'real_buyer_number': '0', 'short_name': u'\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u5957\u7ec4', 'wish_number': '9582', 'start_time': '1438221600', 'baoyou': 0, 'discount': '0', 'sale_forms': 'normal', 'sellable': 1, 'spu_area_code': '19', 'aca': 0, 'is_published_price': '1', 'promo': 'new', 'product_id': '1608006', 'product_reports_number': '0', 'friendly_name': u'\u72ee\u738b(LION)', 'is_exist_225': 0, 'end_time': '1438307999', 'category_id': '94', 'spu_abroad_price': '1.00', 'buyer_number': '0'}, 'ht150730p1608006t2', u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'http://item.jumeiglobal.com/ht150730p1608006t2.html?from=plt_ribenkouqiang_150730_pos_2_121&status=zs', 12, Common.now())
     i.antPage(val)
     i_val = i.outTuple()
     for s in i_val:
