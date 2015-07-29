@@ -1,0 +1,7 @@
+# Ignore all logfiles and tempfiles.
+*.log
+*.pyc
+*.swp
+# Ignore all oldfiles for backup
+*.old
+/old
