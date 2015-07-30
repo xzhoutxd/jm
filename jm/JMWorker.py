@@ -184,11 +184,11 @@ class JMWorker():
                 print '# Activity Items end:',time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())), act.act_id, act.act_name
                 return None
 
-            for item in act.act_itemval_list:
+            for item in act.act_itemval_d.values():
                 #if str(item[6]) in item_ids or str(item[7]) in item_ids:
                     item_val_list.append(item)
         else:
-            item_val_list = act.act_itemval_list
+            item_val_list = act.act_itemval_d.values()
 
         # 如果活动没有商品, 则退出
         if len(item_ids) == 0:
