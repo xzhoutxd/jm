@@ -52,17 +52,21 @@ class Channel():
     def config(self):
         self.channelPage()
         if self.channel_page and self.channel_page != '':
+            server_time = Common.now()
+            m = re.search(r'RM_SERVER_TIME=(.+?);', self.channel_page, flags=re.S)
+            if m:
+                server_time = float(m.group(1))
             print '# onsale'
             # onsale
             m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div class="zhuang_title special_will_title">', self.channel_page, flags=re.S)
             if m:
                 s_p = 1
                 acts_info = m.group(1)
-                p = re.compile(r'<div class="today_list_item">\s+<div class="item_container">\s+<a class="item_text" href="(.+?)".*?>\s+<div class="item_intro">(.+?)</div>\s+<div class="item_img">.+?<img src="(.+?)".*?/>.+?</a>\s+</div>\s+</div>', flags=re.S)
+                p = re.compile(r'<div class="today_list_item">\s+<div class="item_container">\s+<a class="item_text" href="(.+?)".*?>\s+<div class="item_intro">(.+?)</div>\s+<div class="item_img">.+?<img src="(.+?)".*?/>\s+<div class="item_flow">\s+<div.+?diff="(.+?)">.+?</a>\s+</div>\s+</div>', flags=re.S)
                 for act_info in p.finditer(acts_info):
                     #print act_info.group(0)
-                    act_url, act_intro, act_pic_url, act_logo_url, act_name, act_desc, act_discounts, act_times = '', '', '', '', '', '', '', ''
-                    act_url, act_intro, act_pic_url = act_info.group(1), act_info.group(2), act_info.group(3)
+                    act_url, act_intro, act_pic_url, act_logo_url, act_name, act_desc, act_discounts, act_times, act_diff = '', '', '', '', '', '', '', '', ''
+                    act_url, act_intro, act_pic_url, act_diff = act_info.group(1), act_info.group(2), act_info.group(3), act_info.group(4)
                     m = re.search(r'<div class="item_logo">\s+<img src="(.+?)".*?>\s+</div>', act_intro, flags=re.S)
                     if m:
                         act_logo_url = m.group(1)
@@ -81,12 +85,14 @@ class Channel():
                     #m = re.search(r'<div class="item_logo">\s+<img src="(.+?)">\s+</div>\s+<p>(.+?)</p>\s+<span>(.+?)</span>\s+<em>(.+?)</em>\s+<div class="zhuang_time">(.+?)</div>\s+</div>', act_intro, flags=re.S)
                     #if m:
                     #    act_logo_url, act_name, act_desc, act_discounts, act_times = m.group(1), m.group(2), m.group(3), re.sub(r'<.+?>','',m.group(4)), m.group(5)
+
                     act_id = 0
                     m = re.search(r'from=.+?_(\d+)_pos\d+', act_url)
                     if m:
                         act_id = int(m.group(1))
+
                     #print self.channel_id, self.channel_name, self.channel_url, s_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, self.crawling_begintime
-                    a_val = (self.channel_id, self.channel_name, self.channel_url, s_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, self.crawling_begintime)
+                    a_val = (self.channel_id, self.channel_name, self.channel_url, s_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, act_diff, server_time, self.crawling_begintime)
                     print a_val
                     self.channel_sale_acts.append(a_val)
                     s_p += 1
@@ -98,10 +104,10 @@ class Channel():
                 w_p = 1
                 will_acts_info = m.group(1)
                 #print will_acts_info
-                p = re.compile(r'<div class="two_imgbox">\s+<a href="(.+?)".*?>\s*<img src="(.+?)".*?/>\s*</a>.+?</div>\s+<a.+?>(.+?)</a>', flags=re.S)
+                p = re.compile(r'<div class="two_imgbox">\s+<a href="(.+?)".*?>\s*<img src="(.+?)".*?/>\s*</a>.+?<div class="item_flow">\s+<div.+?diff="(.+?)">.+?</div>\s+<a.+?>(.+?)</a>', flags=re.S)
                 for act_info in p.finditer(will_acts_info):
-                    act_url, act_intro, act_pic_url, act_logo_url, act_name, act_desc, act_discounts, act_times = '', '', '', '', '', '', '', ''
-                    act_url, act_pic_url, act_intro = act_info.group(1), act_info.group(2), act_info.group(3)
+                    act_url, act_intro, act_pic_url, act_logo_url, act_name, act_desc, act_discounts, act_times, act_stime = '', '', '', '', '', '', '', '', ''
+                    act_url, act_pic_url, act_stime, act_intro = act_info.group(1), act_info.group(2), act_info.group(3), act_info.group(4)
                     m = re.search(r'<p class="two_title">(.+?)</p>', act_intro, flags=re.S)
                     if m:
                         act_name = m.group(1)
@@ -114,12 +120,13 @@ class Channel():
                     m = re.search(r'<div class="two_logo">\s+<img src="(.+?)".*?>\s+<span class="time_section">(.+?)</span>\s+</div>', act_intro, flags=re.S)
                     if m:
                         act_logo_url, act_times = m.group(1), m.group(2)
+
                     act_id = 0
                     m = re.search(r'from=.+?_(\d+)_pos\d+', act_url)
                     if m:
                         act_id = int(m.group(1))
                     #print self.channel_id, self.channel_name, self.channel_url, w_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, self.crawling_begintime
-                    a_val = (self.channel_id, self.channel_name, self.channel_url, w_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, self.crawling_begintime)
+                    a_val = (self.channel_id, self.channel_name, self.channel_url, w_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, act_stime, server_time, self.crawling_begintime)
                     print a_val
                     self.channel_coming_acts.append(a_val)
                     w_p += 1
