@@ -256,16 +256,17 @@ class JMWorker():
         if items_list and len(items_list) > 0:
             a_stime = act.act_start_time
             a_etime = act.act_end_time
-            if not a_stime or float(a_stime) == 0.0 or not a_etime or float(a_etime) == 0.0:
-                for item in items_list:
+            #if not a_stime or float(a_stime) == 0.0 or not a_etime or float(a_etime) == 0.0:
+            for item in items_list:
+                if not a_stime or float(a_stime) == 0.0:
                     if item[20] != '':
                         i_stime = Common.str2timestamp(item[20])
                         if not a_stime or float(a_stime) == 0.0:
                             act.act_start_time = self.startTime(act.act_start_time, i_stime)
-                    if item[21] != '':
-                        i_etime = Common.str2timestamp(item[21])
-                        if not a_etime or float(a_etime) == 0.0:
-                            act.act_end_time = self.endTime(act.act_end_time, i_etime)
+                if item[21] != '':
+                    i_etime = Common.str2timestamp(item[21])
+                    if not a_etime or float(a_etime) == 0.0:
+                        act.act_end_time = self.endTime(act.act_end_time, i_etime)
 
     # To put act db
     def putActDB(self, act, prev_act, items_list):
