@@ -58,7 +58,8 @@ class Channel():
                 server_time = float(m.group(1))
             print '# onsale'
             # onsale
-            m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div class="zhuang_title special_will_title">', self.channel_page, flags=re.S)
+            #m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div class="zhuang_title special_will_title">', self.channel_page, flags=re.S)
+            m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div id="special_will">', self.channel_page, flags=re.S)
             if m:
                 s_p = 1
                 acts_info = m.group(1)
