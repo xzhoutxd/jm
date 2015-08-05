@@ -17,9 +17,10 @@ class RedisQueue:
 
         # 抓取队列   tm:1, tb:2, vip:3, jhs:4, jm:5
         self.q_list = [
-                '5_channel_main',  # 聚美频道
+                '5_channel_main', '5_channel_global',  # 聚美频道
                 '5_act_main', '5_act_check', # 聚美品牌团 
-                '5_item_update', '5_item_hour', '5_item_day', '5_item_check' # 聚美商品
+                '5_item_update', '5_item_hour', '5_item_day', '5_item_check', # 聚美商品
+                '5_globalitem_main' # 聚美极速免税店单品
             ]
 
         # 初始化队列

@@ -26,6 +26,11 @@ class Item():
         self.crawling_beginDate = '' # 本次爬取日期
         self.crawling_beginHour = '' # 本次爬取小时
 
+        # 单品类型商品所属频道
+        self.channel_id    = ''
+        self.channel_name  = ''
+        self.channel_url   = ''
+
         # 商品所在活动
         self.act_id = '' # 商品所属活动Id
         self.act_name = '' # 商品所属活动Name
@@ -42,7 +47,7 @@ class Item():
         self.item_desc = '' # 商品说明
         self.item_cat_id = '' # 商品叶子类目id
         self.item_cat_name = '' # 商品叶子类目name
-        self.item_brand = 0 # 商品品牌id
+        self.item_brand = '' # 商品品牌id
         self.item_brand_name = '' # 商品品牌name
         self.item_brand_friendly_name = '' # 商品品牌近似name
         self.item_sell_status = -1 # 商品是否售卖 0:不售,1:在售 售罄和结束为0
@@ -50,12 +55,16 @@ class Item():
         self.item_isLock_time = None # 抓到锁定的时间
         self.item_type_s = '' # 商品抓取到的属性 'retail_global' 'global' 'product' 
         self.item_type = '' # 商品属性是否是'global' 'product'
-        self.item_category_id = 0 # 商品所属分类id 尽量下级分类
+        self.item_category_id = '' # 商品所属分类id 尽量下级分类
         self.item_category_name = '' # 商品所属分类name
-        self.item_category_v3_1 = 0 # 
+        self.item_category_v3_1 = '' # 
         self.item_mname = '' # 商品长名称
         self.item_sname = '' # 商品短名称
         self.item_product_id = '' # 商品产品id
+        self.item_area_id = '' # 产地id
+        self.item_area_name_c = '' # 产地中文name
+        self.item_area_name_e = '' # 产地英文name
+        self.item_area_flag = '' # 产地国旗链接
 
         # 商品时间信息
         self.item_start_time = 0 # 商品开团时间
@@ -165,7 +174,7 @@ class Item():
                             self.item_type = 'product'
 
     def itemDealcontent(self, dealcontent):
-        if dealcontent and dealcontent != '':
+        if dealcontent:
             info = re.sub(r'&nbsp;','',dealcontent)
             if not self.item_brand_name or self.item_brand_name == '':
                 m = re.search(r'品牌.+?</td>\s+<td>(.+?)</td>', info, flags=re.S)
@@ -231,6 +240,16 @@ class Item():
             m = re.search(r'<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
             if m:
                 dealcontent = m.group(1)
+
+        # area
+        if self.item_area_flag == '' or self.item_area_name_c == '' or self.item_area_name_e == '':
+            m = re.search(r'<div class="deal_right">.+?<img src="(.+?)".+?alt="flag".+?>\s+<ul class="fl">\s+<li class="area_code_b">(.+?)</li>\s+<li class="deal_en">(.+?)</li>', page, flags=re.S)
+            if m:
+                self.item_area_flag, self.item_area_name_c, self.item_area_name_e = m.group(1), m.group(2), m.group(3)
+        if self.item_area_id == 0 and self.item_area_flag:
+            m = re.search(r'.+?/(\d+)_flag.+?', self.item_area_flag)
+            if m:
+                self.item_area_id = int(m.group(1))
 
         self.itemDealcontent(dealcontent)
         self.itemGlobalDealinfo()
@@ -455,7 +474,7 @@ class Item():
         a_url = 'http://koubei.jumei.com/Ajax/getDealDatasByProductId?product_id=%s&verify_code=%s&time=%s&callback=%s&_=%s' % (self.item_product_id,verify_code,time_s,callback_s,str(time_n))
         #print a_url
         result = self.crawler.getData(a_url, self.item_url)
-        if result and result != '':
+        if result:
             m = re.search(r'"dealCommentNumber":"(.+?)",', result, flags=re.S)
             if m:
                 item_comment_num = m.group(1)
@@ -477,6 +496,8 @@ class Item():
             refer_url = ''
             if self.act_url != '':
                 refer_url = self.act_url
+            elif self.channel_url != '':
+                refer_url = self.channel_url
             page = self.crawler.getData(self.item_url, refer_url)
 
             if type(self.crawler.history) is list and len(self.crawler.history) != 0 and re.search(r'302',str(self.crawler.history[0])):
@@ -516,7 +537,6 @@ class Item():
             #    print '# item itemParser item_pageData is empty...'
         else:
             self.itemDict()
-        self.item_pages['item-init'] = ('',self.item_pageData)
 
     # json string
     def itemString(self):
@@ -582,6 +602,9 @@ class Item():
             m = re.search(r'"min_discount":"(.+?)",', self.item_pageData, flags=re.S)
             if m:
                 self.item_min_discount = m.group(1)
+            m = re.search(r'"spu_area_code":"(.+?)",', self.item_pageData, flags=re.S)
+            if m:
+                self.item_area_id = int(m.group(1))
             m = re.search(r'"chinese_name":"(.+?)",', self.item_pageData, flags=re.S)
             if m:
                 self.item_brand_name = m.group(1)
@@ -640,6 +663,8 @@ class Item():
                 self.item_sku_max_mprice = self.item_pageData['sku_max_market_price']
             if self.item_pageData.has_key('min_discount'):
                 self.item_min_discount = self.item_pageData['min_discount']
+            if self.item_pageData.has_key('spu_area_code'):
+                self.item_area_id = int(self.item_pageData['spu_area_code'])
             if self.item_pageData.has_key('chinese_name'):
                 self.item_brand_name = self.item_pageData['chinese_name']
             if self.item_pageData.has_key('friendly_name'):
@@ -657,14 +682,223 @@ class Item():
         self.itemConfig()
         self.item_pages['item-home'] = (self.item_url, self.item_page)
 
+    def antPageGlobal(self, val):
+        self.channel_id, self.channel_name, self.channel_url, self.item_pageData, self.item_position, self.crawling_begintime = val
+        self.item_pages['item-init'] = ('', self.item_pageData)
+        # 本次抓取开始日期
+        self.crawling_beginDate = time.strftime("%Y-%m-%d", time.localtime(self.crawling_begintime))
+        # 本次抓取开始小时
+        self.crawling_beginHour = time.strftime("%H", time.localtime(self.crawling_begintime))
+        self.globalItemParser()
+        self.itemConfig()
+        self.item_pages['item-home'] = (self.item_url, self.item_page)
+
+    # parse global item data
+    def globalItemParser(self):
+        # 基本信息
+        if type(self.item_pageData) is str:
+            if self.item_pageData != '': 
+                try:
+                    self.item_pageData = json.loads(self.item_pageData)
+                    self.globalItemDict()
+                except Exception as e:
+                    self.globalItemString()
+        else:
+            self.globalItemDict()
+
+    # data string
+    def globalItemString(self):
+        m = re.search(r'<div class="product_introduce', self.item_pageData, flags=re.S)
+        if m:
+            self.globalItemHtml()
+        else:
+            self.globalItemJsonString()
+
+    def globalItemHtml(self):
+        m = re.search(r'price="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_disprice = m.group(1)
+        else:
+            m = re.search(r'<div class="r_pric_box">\s+<em class="big_pic">\s+<span class="currency_arial">.+?</span>(.+?)</em>', self.item_pageData, flags=re.S)
+            if m:
+                self.item_disprice = m.group(1).strip()
+        m = re.search(r'search_product_id="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_product_id = m.group(1)
+        m = re.search(r'search_brand_id="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_brand_id = m.group(1)
+        m = re.search(r'search_product_type="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_type_s = m.group(1)
+            if self.item_type_s.find('global') != -1:
+                self.item_type = 'global'
+            elif self.item_type_s.find('product') != -1:
+                self.item_type = 'product'
+        m = re.search(r'search_hash_id="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_id = m.group(1)
+        m = re.search(r'search_spu_id="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            spu_id = m.group(1)
+        m = re.search(r'search_category_id="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_category_id = m.group(1)
+        
+        m = re.search(r'<div class="pro_left">\s+<a href="(.+?)".+?>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_url = m.group(1)
+        else:
+            m = re.search(r'<div class="pro_right" target="_blank">\s+<a href="(.+?)".+?>', self.item_pageData, flags=re.S)
+            if m:
+                self.item_url = m.group(1)
+        m = re.search(r'<div class ="p_img_lg">\s+<img.+?data-lazysrc="(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_pic_url = m.group(1)
+        m = re.search(r'<div class="flag_box_main fl clearfix">\s+<img src="(.+?)".+?/>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_area_flag = m.group(1)
+            if self.item_area_id == 0 and self.item_area_flag:
+                m = re.search(r'.+?/(\d+)_flag.+?', self.item_area_flag)
+                if m:
+                    self.item_area_id = int(m.group(1))
+        m = re.search(r'<ul class="flag_text">\s+<li>(.+?)</li>\s+<li>(.+?)</li>\s+</ul>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_area_name_e, self.item_area_name_c = m.group(1), m.group(2)
+        m = re.search(r'<div class="numtimer_box">\s+<span class="dddd" diff="(\d+)">', self.item_pageData, flags=re.S)
+        if m:
+            time_diff = m.group(1)
+        m = re.search(r'<p class="pro_eng_tit"><span class="f15">(.+?)</span>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_name = m.group(1)
+        m = re.search(r'<p class="pro_des  ">\s+<strong>(.+?)折／</strong>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_discount = m.group(1)
+        m = re.search(r'<p class="pro_des  ">\s+<strong>.+?</strong>(.+?)</p>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_desc = m.group(1).strip()
+
+        m = re.search(r'<div class="r_pric_box">.+?<span class="original">(.+?)</span>', self.item_pageData, flags=re.S)
+        if m:
+            oriprice_s = m.group(1).strip()
+            self.item_oriprice = re.sub(r'￥','',original_s)
+        m = re.search(r'<div class="advance_head">\s+<span><em>(.+?)</em>', self.item_pageData, flags=re.S)
+        if m:
+            self.item_buyer_num = m.group(1)
+
+    # json string
+    def globalItemJsonString(self):
+        m = re.search(r'"area_code":"(\d+)",', self.item_pageData, flags=re.S)
+        if m:
+            self.item_area_id = int(m.group(1))
+        else:
+            m = re.search(r'"area_name":.+?"area_code":"(.+?)",', self.item_pageData, flags=re.S)
+            if m:
+                self.item_area_id = int(m.group(1))
+        m = re.search(r'"image":.+?"pro_from":"(.+?)",', self.item_pageData, flags=re.S)
+        if m:
+            self.item_area_flag = m.group(1)
+            if self.item_area_id == 0 and self.item_area_flag:
+                m = re.search(r'.+?/(\d+)_flag.+?', self.item_area_flag)
+                if m:
+                    self.item_area_id = int(m.group(1))
+        m = re.search(r'"image":.+?"pro_pic":"(.+?)",', self.item_pageData, flags=re.S)
+        if m:
+            self.item_pic_url = m.group(1)
+        m = re.search(r'"diff":(\d+),', self.item_pageData, flags=re.S)
+        if m:
+            time_diff = m.group(1)
+        m = re.search(r'"url":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_url = m.group(1)
+        m = re.search(r'"pro_stitle":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_name = self.item_sname = m.group(1)
+        m = re.search(r'"medium_name":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_mname = m.group(1)
+        m = re.search(r'"price_home":(.+?),', self.item_pageData, flags=re.S)
+        if m:
+            self.item_disprice = m.group(1)
+        m = re.search(r'"price_ref":(.+?),', self.item_pageData, flags=re.S)
+        if m:
+            self.item_oriprice = m.group(1)
+        m = re.search(r'"discount":(.+?),', self.item_pageData, flags=re.S)
+        if m:
+            self.item_discount = m.group(1)
+        m = re.search(r'"buyer_number":(\d+),', self.item_pageData, flags=re.S)
+        if m:
+            self.item_buyer_num = m.group(1)
+        m = re.search(r'"brand_id":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_brand_id = m.group(1)
+        m = re.search(r'"hash_id":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_id = m.group(1)
+        m = re.search(r'"end_time":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_end_time = m.group(1)
+        m = re.search(r'"spu_id":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            spu_id = m.group(1)
+        m = re.search(r'"category_id":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_category_id = m.group(1)
+        m = re.search(r'"product_id":"(.+?)"', self.item_pageData, flags=re.S)
+        if m:
+            self.item_product_id = m.group(1)
+
+    # json dict
+    def globalItemDict(self):
+        if self.item_pageData.has_key('area_code'):
+            self.item_area_id = self.item_pageData['area_code']
+        elif self.item_pageData.has_key('area_name') and self.item_pageData['area_name'].has_key('area_code'):
+            self.item_area_id = self.item_pageData['area_name']['area_code']
+        if self.item_pageData.has_key('image') and self.item_pageData['image'].has_key('pro_from'):
+            self.item_area_flag = self.item_pageData['image']['pro_from']
+            if self.item_area_id == 0 and self.item_area_flag:
+                m = re.search(r'.+?/(\d+)_flag.+?', self.item_area_flag)
+                if m:
+                    self.item_area_id = int(m.group(1))
+        if self.item_pageData.has_key('image') and self.item_pageData['image'].has_key('pro_pic'):
+            self.item_pic_url = self.item_pageData['image']['pro_pic']
+        if self.item_pageData.has_key('diff'):
+            time_diff = self.item_pageData['diff']
+        if self.item_pageData.has_key('url'):
+            self.item_url = self.item_pageData['url']
+        if self.item_pageData.has_key('pro_stitle'):
+            self.item_name = self.item_sname = self.item_pageData['pro_stitle']
+        if self.item_pageData.has_key('medium_name'):
+            self.item_mname = self.item_pageData['medium_name']
+        if self.item_pageData.has_key('price_home'):
+            self.item_disprice = self.item_pageData['price_home']
+        if self.item_pageData.has_key('price_ref'):
+            self.item_oriprice = self.item_pageData['price_ref']
+        if self.item_pageData.has_key('discount'):
+            self.item_discount = self.item_pageData['discount']
+        if self.item_pageData.has_key('buyer_number'):
+            self.item_buyer_num = self.item_pageData['buyer_number']
+        if self.item_pageData.has_key('brand_id'):
+            self.item_brand_id = self.item_pageData['brand_id']
+        if self.item_pageData.has_key('hash_id'):
+            self.item_id = self.item_pageData['hash_id']
+        if self.item_pageData.has_key('end_time'):
+            self.item_end_time = self.item_pageData['end_time']
+        if self.item_pageData.has_key('spu_id'):
+            spu_id = self.item_pageData['spu_id']
+        if self.item_pageData.has_key('category_id'):
+            self.item_category_id = self.item_pageData['category_id']
+        if self.item_pageData.has_key('product_id'):
+            self.item_product_id = self.item_pageData['product_id']
+
     # 输出商品的网页
-    def outItemPage(self,crawl_type):
+    def outItemPage(self, itemobj, crawl_type):
         if self.crawling_begintime != '':
             time_s = time.strftime("%Y%m%d%H", time.localtime(self.crawling_begintime))
         else:
             time_s = time.strftime("%Y%m%d%H", time.localtime(self.crawling_time))
-        # timeStr_jmtype_webtype_item_crawltype_itemid
-        key = '%s_%s_%s_%s_%s_%s' % (time_s,Config.JM_TYPE,'1','item',crawl_type,str(self.item_id))
+        # timeStr_jmtype_webtype_itemobj_crawltype_itemid
+        key = '%s_%s_%s_%s_%s_%s' % (time_s,Config.JM_TYPE,'1',itemobj,crawl_type,str(self.item_id))
         pages = {}
         for p_tag in self.item_pages.keys():
             p_url, p_content = self.item_pages[p_tag]
@@ -706,7 +940,10 @@ class Item():
         return pages
 
     def outTuple(self):
-        return (self.item_id,self.item_sname,self.item_mname,self.item_sname,self.item_desc,self.item_url,self.item_pic_url,self.item_disprice,self.item_oriprice,self.item_discount,self.item_min_discount,self.item_sku_min_price,self.item_sku_max_mprice,self.item_buyer_num,self.item_real_buyer_num,self.item_ending_buyer_number,self.item_wish_num,self.item_product_id,self.item_category_id,self.item_category_name,self.item_category_v3_1,self.item_brand_id,self.item_brand_name,self.item_brand_friendly_name,self.item_sell_status,self.item_type_s,self.item_type,self.item_deal_tax,self.item_promotions,self.item_skus,Common.time_s(float(self.item_start_time)),Common.time_s(float(self.item_end_time)),self.act_id,self.item_position)
+        return (self.item_id,self.item_sname,self.item_mname,self.item_sname,self.item_desc,self.item_url,self.item_pic_url,str(self.item_disprice),str(self.item_oriprice),str(self.item_discount),str(self.item_min_discount),str(self.item_sku_min_price),str(self.item_sku_max_mprice),str(self.item_buyer_num),str(self.item_real_buyer_num),str(self.item_ending_buyer_number),str(self.item_wish_num),str(self.item_product_id),str(self.item_category_id),self.item_category_name,str(self.item_category_v3_1),str(self.item_brand_id),self.item_brand_name,self.item_brand_friendly_name,str(self.item_sell_status),self.item_type_s,self.item_type,str(self.item_deal_tax),str(self.item_promotions),str(self.item_skus),Common.time_s(float(self.item_start_time)),Common.time_s(float(self.item_end_time)),str(self.act_id),str(self.item_position))
+
+    def outTupleGlobal(self):
+        return (self.item_id,self.item_sname,self.item_mname,self.item_sname,self.item_desc,self.item_url,self.item_pic_url,str(self.item_disprice),str(self.item_oriprice),str(self.item_discount),str(self.item_min_discount),str(self.item_sku_min_price),str(self.item_sku_max_mprice),str(self.item_buyer_num),str(self.item_real_buyer_num),str(self.item_ending_buyer_number),str(self.item_wish_num),str(self.item_product_id),str(self.item_category_id),self.item_category_name,str(self.item_category_v3_1),str(self.item_brand_id),self.item_brand_name,self.item_brand_friendly_name,str(self.item_sell_status),self.item_type_s,self.item_type,str(self.item_deal_tax),str(self.item_promotions),str(self.item_skus),Common.time_s(float(self.item_start_time)),Common.time_s(float(self.item_end_time)),str(self.channel_id),str(self.item_position))
 
     def outSql(self):
         item_start_time = ''
@@ -717,13 +954,21 @@ class Item():
             item_end_time = Common.time_s(float(self.item_end_time))
         return (Common.time_s(float(self.crawling_time)),self.item_id,self.item_sname,self.item_url,self.item_pic_url,self.item_disprice,self.item_oriprice,self.item_discount,self.item_buyer_num,self.item_real_buyer_num,self.item_ending_buyer_number,self.item_wish_num,self.item_product_id,self.item_category_id,self.item_category_name,self.item_category_v3_1,self.item_brand_id,self.item_brand_name,self.item_brand_friendly_name,self.item_type,item_start_time,item_end_time,self.act_id,self.item_position,self.crawling_beginDate,self.crawling_beginHour)
 
+    def outGlobalSql(self):
+        item_start_time = ''
+        if self.item_start_time and float(self.item_start_time) != 0.0 and int(self.item_start_time) > 0:
+            item_start_time = Common.time_s(float(self.item_start_time))
+        item_end_time = ''
+        if self.item_end_time and float(self.item_end_time) != 0.0 and int(self.item_end_time) > 0:
+            item_end_time = Common.time_s(float(self.item_end_time))
+        return (Common.time_s(float(self.crawling_time)),self.item_id,self.item_sname,self.item_url,self.item_pic_url,self.item_disprice,self.item_oriprice,self.item_discount,self.item_buyer_num,self.item_real_buyer_num,self.item_ending_buyer_number,self.item_wish_num,self.item_product_id,self.item_category_id,self.item_category_name,self.item_category_v3_1,self.item_brand_id,self.item_brand_name,self.item_brand_friendly_name,self.item_type,item_start_time,item_end_time,self.channel_id,self.item_position,self.crawling_beginDate,self.crawling_beginHour)
+
 def test():
     pass
 
 if __name__ == '__main__':
     print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     i = Item()
-    val = (8830, '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', '', 'ht150730p1608006t2', '', 'http://item.jumeiglobal.com/ht150730p1608006t2.html?from=plt_ribenkouqiang_150730_pos_2', 1, Common.now())
     val = (8830, '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', {'original_price': '0', 'discounted_price': '39', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 1, 'promo_sale_text': [], 'product_report_rating': '5.0', 'brand_id': '3428', 'is_stock_split': '0', 'pic_url': 'http://p1.jmstatic.com/product/001/608/1608006_std/1608006_350_350.jpg', 'category': 'retail_global', 'commission_rate': '0.0000', 'chinese_name': u'\u72ee\u738b', 'category_v3_1': '107', 'sku_max_market_price': '89', 'min_discount': 4.4, 'medium_name': u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'hash_id': 'ht150730p1608006t2', 'status': '1', 'sku_min_price': '39.00', 'payment_end_time': '0', 'real_buyer_number': '0', 'short_name': u'\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u5957\u7ec4', 'wish_number': '9582', 'start_time': '1438221600', 'baoyou': 0, 'discount': '0', 'sale_forms': 'normal', 'sellable': 1, 'spu_area_code': '19', 'aca': 0, 'is_published_price': '1', 'promo': 'new', 'product_id': '1608006', 'product_reports_number': '0', 'friendly_name': u'\u72ee\u738b(LION)', 'is_exist_225': 0, 'end_time': '1438307999', 'category_id': '94', 'spu_abroad_price': '1.00', 'buyer_number': '0'}, 'ht150730p1608006t2', u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'http://item.jumeiglobal.com/ht150730p1608006t2.html?from=plt_ribenkouqiang_150730_pos_2_121&status=zs', 12, Common.now())
     i.antPage(val)
     i_val = i.outTuple()

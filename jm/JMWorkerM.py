@@ -40,6 +40,8 @@ if __name__ == '__main__':
     if obj == 'item':
         if crawl_type in ['update','day','hour','check']:
             a_val = (begin_time,)
+    elif obj == 'globalitem':
+        a_val = (begin_time,)
     m.createProcess((obj, crawl_type, a_val))
     m.run()
     time.sleep(5)

@@ -9,10 +9,12 @@ import random
 import json
 import time
 import traceback
+import logging
 from Message import Message
 from JMChannel import Channel
 from JMAct import Act
 from JMItemM import JMItemM
+from JMItemM import JMItemRedisM
 sys.path.append('../base')
 import Common as Common
 import Config as Config
@@ -99,7 +101,6 @@ class JMWorker():
             #self.push_back(self.giveup_items, msg)
             print "# retry too many time, no get:", msg
 
-
     # To crawl page
     def crawlPage(self, _obj, _crawl_type, _key, msg, _val):
         try:
@@ -149,10 +150,16 @@ class JMWorker():
         msg_val = msg["val"]
         c = Channel()
         c.antPage(msg_val)
-        if len(c.channel_sale_acts) > 0:
-            self.items['sale'] = c.channel_sale_acts
-        if len(c.channel_coming_acts) > 0:
-            self.items['coming'] = c.channel_coming_acts
+        if self._crawl_type == 'global':
+            if len(c.channel_sale_items) > 0:
+                self.items['sale'] = c.channel_sale_items
+            if len(c.channel_coming_items) > 0:
+                self.items['coming'] = c.channel_coming_items
+        else:
+            if len(c.channel_sale_acts) > 0:
+                self.items['sale'] = c.channel_sale_acts
+            if len(c.channel_coming_acts) > 0:
+                self.items['coming'] = c.channel_coming_acts
 
     def run_act(self, msg):
         msg_val = msg["val"]
@@ -222,7 +229,6 @@ class JMWorker():
             # 合并本次和上次抓取的商品ID列表
             prev_item_ids   = prev_act["item_ids"]
             act.act_itemids = Common.unionSet(act.act_itemids, prev_item_ids)
-
 
     # 修正活动开始时间
     def startTime(self, act_stime, item_stime):
@@ -305,8 +311,14 @@ class JMWorker():
         #keys = [self.worker_type, str(act.act_id)]
         #val = act.outTupleForRedis()
         #self.redisAccess.write_jmact(keys, val)
-
+                
     def process(self, _obj, _crawl_type, _val=None):
+        if _obj == 'globalitem':
+            self.processMulti(_obj, _crawl_type, _val)
+        else:
+            self.processOne(_obj, _crawl_type, _val)
+
+    def processOne(self, _obj, _crawl_type, _val=None):
         self.init_crawl(_obj, _crawl_type)
 
         i, M = 0, 20
@@ -335,6 +347,33 @@ class JMWorker():
                 self.crawlPage(_obj, _crawl_type, _key, _msg, _val)
             except Exception as e:
                 print '# exception err in process of JMWorker:',e,_key,_msg
+
+    def processMulti(self, _obj, _crawl_type, _val=None):
+        self.init_crawl(_obj, _crawl_type)
+        if _crawl_type and _crawl_type != '':
+            _key = '%s_%s_%s' % (self.jm_type,_obj,_crawl_type)
+        else:
+            _key = '%s_%s' % (self.jm_type,_obj)
+
+        try:
+            self.crawlPageMulti(_obj, _crawl_type, _key,  _val)
+        except Exception as e:
+            print '# exception err in processMulti of JMWorker:',e,_key
+
+    # To crawl page
+    def crawlPageMulti(self, _obj, _crawl_type, _key, _val):
+        if _obj == 'globalitem':
+            self.run_globalitem(_key, _val)
+        else:
+            print '# crawlPageMulti unknown obj = %s' % _obj
+
+    def run_globalitem(self, _key, _val):
+        mitem = JMItemRedisM(_key, self._crawl_type, 20, _val)
+        mitem.createthread()
+        mitem.run()
+        item_list = mitem.items
+        #self.items = item_list
+        print '# crawl Items num:', len(item_list)
 
     # 删除redis数据库过期活动
     def delAct(self, _acts):

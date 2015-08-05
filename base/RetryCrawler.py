@@ -73,7 +73,7 @@ class RetryCrawler():
                     if retry >= max_retry:
                         break
                     retry += 1
-                    time.sleep(self.w_time*retry)
+                    time.sleep(random.uniform(1,3))
                 elif str(e).find('Name or service not known') != -1 or str(e).find('Temporary failure in name resolution'):
                     if retry >= max_retry:
                         break

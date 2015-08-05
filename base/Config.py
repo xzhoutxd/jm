@@ -9,6 +9,7 @@ import Common
 #pagePath = '../../data/jm/'
 #dataPath = '../../data/jm/'
 #imagePath = '../../image/qzj/'
+logPath = '../../logs/jm/'
 delim    = '\x01'
 
 # 创建目录
@@ -125,7 +126,7 @@ item_mid_th = 20
 
 # 同时入库的数据量限制
 act_max_arg = 10
-item_max_arg = 100
+item_max_arg = 10
 
 ######################## 其它设置  ########################
 

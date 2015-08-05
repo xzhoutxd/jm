@@ -36,6 +36,14 @@ class MysqlAccess():
         except Exception, e:
             print '# insert jm Item hour info exception:', e
 
+    ## globalitem
+    def insertJMGlobalitemHour(self, args_list):
+        try:
+            sql = 'call sp_jmglobal_parser_item_h(%s)' % Common.agg(26)
+            self.jm_db.executemany(sql, args_list)
+        except Exception, e:
+            print '# insert jm Globalitem hour info exception:', e
+
 if __name__ == '__main__':
     pass
     #my = MysqlAccess()

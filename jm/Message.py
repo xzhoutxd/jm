@@ -19,6 +19,8 @@ class Message():
             return self.jmActQueueMsg(_val)
         elif _obj == "item":
             return self.jmItemQueueMsg(_val)
+        elif _obj == "globalitem":
+            return self.jmGlobalitemQueueMsg(_val)
         else:
             return None
 
@@ -38,13 +40,21 @@ class Message():
         act["val"]    = _act[3:]
         return act
 
-    def jmItemQueueMsg(self, _act):
-        act = {}
-        act["retry"]  = _act[0]
-        act["obj"]    = _act[1]
-        act["type"]   = _act[2]
-        act["val"]    = _act[3:]
-        return act
+    def jmItemQueueMsg(self, _item):
+        item = {}
+        item["retry"]  = _item[0]
+        item["obj"]    = _item[1]
+        item["type"]   = _item[2]
+        item["val"]    = _item[3:]
+        return item
+
+    def jmGlobalitemQueueMsg(self, _item):
+        item = {}
+        item["retry"]  = _item[0]
+        item["obj"]    = _item[1]
+        item["type"]   = _item[2]
+        item["val"]    = _item[3:]
+        return item
 
     # 商品Redis数据
     def jhsitemMsg(self, _item):
