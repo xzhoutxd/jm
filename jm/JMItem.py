@@ -405,6 +405,10 @@ class Item():
             m = re.search(r'<div class="deal_con_content">(.+?)</div>', page, flags=re.S)
             if m:
                 dealcontent = m.group(1)
+            else:
+                m = re.search(r'<div class="deal_con_content clearfix">(.+?)</div>', page, flags=re.S)
+                if m:
+                    dealcontent = m.group(1)
 
         self.itemDealcontent(dealcontent)
         self.itemProductDealinfo()
