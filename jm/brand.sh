@@ -22,7 +22,7 @@ cd $DIR
 /usr/local/bin/python $DIR/JMBrand.py $m_type
 
 # process queue
-p_num=2
+p_num=3
 obj='act'
 crawl_type='main'
 DIR=`pwd`
