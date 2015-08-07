@@ -73,7 +73,7 @@ class JMItemM(MyThread):
             _module = '%s_%s' %(_type, _obj)
             self.dial_client.send((_module, self._ip, self._tag))
         except Exception as e:
-            print '# To dial router exception :', e
+            Common.log('# To dial router exception: %s' % e)
 
     def push_back(self, L, v):
         if self.mutex.acquire(1):
@@ -142,14 +142,14 @@ class JMItemM(MyThread):
             self.put_q(_data)
         else:
             self.push_back(self.giveup_items, _val)
-            print "# retry too many times, no get item:", _val
+            Common.log('# retry too many times, no get item:')
+            Common.log(_val)
 
     # insert item info
     def insertIteminfo(self, iteminfosql_list, f=False):
         if f or len(iteminfosql_list) >= Config.item_max_arg:
             if len(iteminfosql_list) > 0:
                 self.mysqlAccess.insertJMItemHour(iteminfosql_list)
-                #print '# insert data to database'
             return True
         return False
 
@@ -169,7 +169,6 @@ class JMItemM(MyThread):
                     _data = self.get_q()
                 except Empty as e:
                     # 队列为空，退出
-                    #print '# queue is empty', e
                     # info
                     self.insertIteminfo(_iteminfosql_list, True)
                     _iteminfosql_list = []
@@ -184,7 +183,6 @@ class JMItemM(MyThread):
                     _val = _data[1]
                     if self.a_val: _val = _val + self.a_val
                     item.antPage(_val)
-                    #print '# To crawl activity item val : ', Common.now_s()
                     # 汇聚
                     # redis
                     #self.putItemDB(item)
@@ -205,36 +203,37 @@ class JMItemM(MyThread):
                 self.queue.task_done()
 
             except Common.NoItemException as e:
-                print 'Not item exception :', e
+                Common.log('# Not item exception: %s' % e)
                 # 通知queue, task结束
                 self.queue.task_done()
 
             except Common.NoPageException as e:
-                print 'Not page exception :', e
+                Common.log('# Not page exception: %s' % e)
                 # 通知queue, task结束
                 self.queue.task_done()
 
             except Common.InvalidPageException as e:
                 self.crawlRetry(_data)
-                print 'Invalid page exception :', e
+                Common.log('# Invalid page exception: %s' % e)
                 # 通知queue, task结束
                 self.queue.task_done()
 
             except Exception as e:
-                print 'Unknown exception crawl item :', e
+                Common.log('# Unknown exception crawl item: %s' % e)
                 Common.traceback_log()
                 self.crawlRetry(_data)
                 # 通知queue, task结束
                 self.queue.task_done()
                 if str(e).find('Name or service not known') != -1 or str(e).find('Temporary failure in name resolution') != -1:
-                    print _data
-                # 重新拨号
-                try:
-                    self.dialRouter(4, 'item')
-                except Exception as e:
-                    print '# DailClient Exception err:', e 
-                    time.sleep(10)
-                time.sleep(random.uniform(10,40))
+                    Common.log(_data)
+                if str(e).find('Read timed out') == -1:
+                    # 重新拨号
+                    try:
+                        self.dialRouter(4, 'item')
+                    except Exception as e:
+                        Common.log('# DailClient Exception err: %s' % e)
+                        time.sleep(10)
+                    time.sleep(random.uniform(10,40))
 
 
 from RedisQueue  import RedisQueue
@@ -283,7 +282,7 @@ class JMItemRedisM(MyThread):
             _module = '%s_%s' %(_type, _obj)
             self.dial_client.send((_module, self._ip, self._tag))
         except Exception as e:
-            print '# To dial router exception :', e
+            Common.log('# To dial router exception: %s' % e)
 
      # clear item queue
     def clearItemQ(self):
@@ -306,20 +305,6 @@ class JMItemRedisM(MyThread):
             L.append(v)
             self.mutex.release()
 
-    # To crawl retry
-    """
-    def crawlRetry(self, _data):
-        if not _data: return
-        _retry, _val = _data
-        _retry += 1
-        if _retry < Config.crawl_retry:
-            _data = (_retry, _val)
-            self.redisQueue.put_q(self._key, _data)
-        else:
-            self.push_back(self.giveup_items, _val)
-            print "# retry too many times, no get item:", _val
-    """
-
     def crawlRetry(self, _key, msg):
         if not msg: return
         msg['retry'] += 1
@@ -331,15 +316,14 @@ class JMItemRedisM(MyThread):
         if _retry < max_time:
             self.redisQueue.put_q(_key, msg)
         else:
-            #self.push_back(self.giveup_items, msg)
-            print "# retry too many time, no get:", msg
+            Common.log('# retry too many time, no get msg:')
+            Common.log(msg)
 
     # insert Global item hour
     def insertGlobalItemHour(self, iteminfosql_list, f=False):
         if f or len(iteminfosql_list) >= Config.item_max_arg:
             if len(iteminfosql_list) > 0:
                 self.mysqlAccess.insertJMGlobalitemHour(iteminfosql_list)
-                #print '# insert data to database'
             return True
         return False
 
@@ -355,15 +339,14 @@ class JMItemRedisM(MyThread):
                 # 队列为空
                 if not _data:
                     # 队列为空，退出
-                    #print '# queue is empty', e
                     # info
                     self.insertGlobalItemHour(_iteminfosql_list, True)
                     _iteminfosql_list = []
 
                     i += 1
                     if i > M:
-                        print '# all get itemQ item num:',n
-                        print '# not get itemQ of key:',self._key
+                        Common.log('# all get itemQ item num: %d' % n)
+                        Common.log('# not get itemQ of key: %s' % self._key)
                         break
                     time.sleep(10)
                     continue
@@ -378,7 +361,6 @@ class JMItemRedisM(MyThread):
                     if self.a_val: _val = _val + self.a_val
 
                     item.antPageGlobal(_val)
-                    #print '# Hour To crawl item val : ', Common.now_s(), _val[0], _val[4], _val[5]
                     # 汇聚
                     self.push_back(self.items, item.outGlobalSql())
 
@@ -397,27 +379,28 @@ class JMItemRedisM(MyThread):
                 time.sleep(1)
 
             except Common.NoItemException as e:
-                print 'Not item exception :', e
+                Common.log('# Not item exception: %s' % e)
 
             except Common.NoPageException as e:
-                print 'Not page exception :', e
+                Common.log('# Not page exception: %s' % e)
 
             except Common.InvalidPageException as e:
                 self.crawlRetry(self._key, _data)
-                print 'Invalid page exception :', e
+                Common.log('# Invalid page exception: %s' % e)
 
             except Exception as e:
-                print 'Unknown exception crawl item :', e
-                print Common.traceback_log()
+                Common.log('# Unknown exception crawl item: %s' % e)
+                Common.traceback_log()
 
                 self.crawlRetry(self._key, _data)
-                # 重新拨号
-                try:
-                    self.dialRouter(4, 'item')
-                except Exception as e:
-                    print '# DailClient Exception err:', e
-                    time.sleep(10)
-                time.sleep(random.uniform(10,30))
+                if str(e).find('Read timed out') == -1:
+                    # 重新拨号
+                    try:
+                        self.dialRouter(4, 'item')
+                    except Exception as e:
+                        Common.log('# DailClient Exception err: %s' % e)
+                        time.sleep(10)
+                    time.sleep(random.uniform(10,30))
 
 if __name__ == '__main__':
     pass

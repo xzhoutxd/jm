@@ -13,6 +13,7 @@ from JMWorker import JMWorker
 sys.path.append('../base')
 import Common as Common
 import Config as Config
+import Logger as Logger
 sys.path.append('../db')
 from MysqlAccess import MysqlAccess
 
@@ -62,9 +63,9 @@ class JMGlobal():
 
                     # 清空item redis队列
                     self.item_queue.clearQ()
-                    print '# channel queue end:',time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                    Common.log('# channel queue end')
                 else:
-                    print '# not find channel...'
+                    Common.log('# not find channel...')
 
             # global items
             obj = 'channel'
@@ -77,38 +78,41 @@ class JMGlobal():
             item_val = self.work.items
             if item_val and len(item_val.keys()) > 0:
                 if item_val.has_key('sale'):
-                    print '# item on sale nums:', len(item_val['sale'])
+                    Common.log('# item on sale nums: %d' % len(item_val['sale']))
                     item_val_list.extend(item_val['sale'])
                 if item_val.has_key('coming'):
-                    print '# item will coming nums:', len(item_val['coming'])
+                    Common.log('# item will coming nums: %s' % len(item_val['coming']))
                     item_val_list.extend(item_val['coming'])
 
-            print '# item val nums:', len(item_val_list)
+            Common.log('# item val nums: %s' % len(item_val_list))
             # 保存到redis队列
             self.item_queue.putlistQ(item_val_list)
-            print '# item queue end:',time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            Common.log('# item queue end')
 
             #if self.m_type == 'm':
             #    val = (Common.add_hours(self.begin_time, -2),Common.add_hours(self.begin_time, -2),Common.add_hours(self.begin_time, -1))
             #    # 删除Redis中上个小时结束的商品
             #    _items = self.mysqlAccess.selectJMItemEndLastOneHour(val)
-            #    print '# end items num:',len(_items)
+            #    Common.log('# end items num: %d' % len(_items))
             #    self.work.delItem(_items)
         except Exception as e:
-            print '# antpage error :',e
+            Common.log('# JMGlobal antpage error: %s' % e)
             Common.traceback_log()
 
 if __name__ == '__main__':
+    loggername = 'global'
+    filename = 'add_channel_%s' % (time.strftime("%Y%m%d%H", time.localtime()))
+    Logger.config_logging(loggername, filename)
     args = sys.argv
     #args = ['JMGlobal','m']
     if len(args) < 2:
-        print '#err not enough args for JMGlobal...'
+        Common.log('#err not enough args for JMGlobal...')
         exit()
     # 是否是分布式中主机
     m_type = args[1]
     j = JMGlobal(m_type)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log('# JMGlobal start')
     j.antPage()
     time.sleep(1)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log('# JMGlobal end')
 

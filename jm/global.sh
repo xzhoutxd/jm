@@ -18,7 +18,8 @@ LOGDIR=`pwd`
 LOGFILE=$LOGDIR/logs/jm/global/add_channel_${DATESTR}.log
 
 cd $DIR
-/usr/local/bin/python $DIR/JMGlobal.py $m_type > $LOGFILE
+#/usr/local/bin/python $DIR/JMGlobal.py $m_type > $LOGFILE
+/usr/local/bin/python $DIR/JMGlobal.py $m_type
 
 # process queue
 p_num=2
@@ -33,5 +34,6 @@ LOGDIR=`pwd`
 LOGFILE=$LOGDIR/logs/jm/global/add_items_${DATESTR}.log
 
 cd $DIR
-/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type > $LOGFILE
+#/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type > $LOGFILE
+/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type
 

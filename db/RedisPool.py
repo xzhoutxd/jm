@@ -9,6 +9,7 @@ import traceback
 path.append(r'../base')
 import Environ as Environ
 import Config  as Config
+import Common  as Common
 
 class RedisPool:
     '''A class of connect pool to Redis Database'''
@@ -53,8 +54,7 @@ class RedisPool:
             r = redis.Redis(connection_pool=_pool)
             r.set(_key, _val)
         except Exception, e:
-            print '# RedisPool write exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool write exception: %s' % e)
 
     def read(self, keys, _db=0):
         try:
@@ -65,8 +65,7 @@ class RedisPool:
                 _val = r.get(_key)
                 return _val
         except Exception, e:
-            print '# RedisPool read exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool read exception: %s' % e)
 
     # 扫描数据库内容
     def scan_db(self, _db=0):
@@ -81,8 +80,7 @@ class RedisPool:
             return _vals
 
         except Exception, e:
-            print '# RedisPool scan db exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool scan db exception: %s' % e)
             return []
 
     # 数据库计数
@@ -93,8 +91,7 @@ class RedisPool:
             _size= r.dbsize()
             return _size            
         except Exception, e:
-            print '# RedisPool count db exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool count db exception: %s' % e)
 
     # 清空数据库
     def flush_db(self, _db=0):
@@ -103,8 +100,7 @@ class RedisPool:
             r    = redis.Redis(connection_pool=_pool)
             r.flushdb()
         except Exception, e:
-            print '# RedisPool flush db exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool flush db exception: %s' % e)
 
     def exists(self, keys, _db=0):
         try:
@@ -114,8 +110,7 @@ class RedisPool:
             _ret  = r.exists(_key)
             return _ret
         except Exception, e:
-            print '# RedisPool exists exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool exists exception: %s' % e)
 
     def remove(self, keys, _db=0):
         try:
@@ -125,15 +120,8 @@ class RedisPool:
             r.delete(_key)
 
         except Exception, e:
-            print '# RedisPool remove exception:', e
-            traceback.print_exc()
+            Common.log('# RedisPool remove exception: %s' % e)
 
-if __name__ == '__main__1':
-    pool1 = RedisPool()
-    pool2 = RedisPool()
-    print pool1 is pool2
-    
 if __name__ == '__main__':
-    pool = RedisPool()
-    for i in [3,4,5]: pool.flush_db(i)
+    pass
 

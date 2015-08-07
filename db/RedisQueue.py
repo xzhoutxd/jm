@@ -6,6 +6,7 @@ from sys import path
 from hotqueue import HotQueue
 path.append(r'../base')
 import Environ as Environ
+import Common  as Common
 
 class RedisQueue:
     def __init__(self):
@@ -41,7 +42,7 @@ class RedisQueue:
                 q = self.q_dict[_key]
                 q.put(_val)
         except Exception as e:
-            print '# put_q exception ', e
+            Common.log('# put_q exception: %s' % e)
 
     # To get queue
     def get_q(self, _key):
@@ -51,7 +52,7 @@ class RedisQueue:
                 q = self.q_dict[_key]
                 _val = q.get()
         except Exception as e:
-            print '# get_q exception ', e        
+            Common.log('# get_q exception: %s' % e)
         return _val
 
     # 清空队列
@@ -62,5 +63,4 @@ class RedisQueue:
 
 if __name__ == "__main__":
     pass
-    #q = RedisQueue()
 

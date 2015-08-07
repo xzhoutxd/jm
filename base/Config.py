@@ -2,6 +2,7 @@
 #!/usr/bin/env python
 
 import os
+import datetime
 import Common
 
 ######################## 环境变量  ########################
@@ -110,7 +111,8 @@ g_padAppAgents = [
 ]
 
 # 抓取起始时间
-g_crawledTime = Common.str2timestamp('2000-01-01 00:00:00')
+#g_crawledTime = Common.str2timestamp('2000-01-01 00:00:00')
+g_crawledTime = datetime.datetime.strptime('2000-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
 
 # 网页最大抓取次数
 crawl_retry         = 10

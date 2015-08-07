@@ -45,7 +45,7 @@ class RedisAccess:
                 _cookie= cookie_dict["cookie"]
                 return (_time, _cookie)
         except Exception, e:
-            print '# Redis access read cookie exception:', e
+            Common.log('# Redis access read cookie exception: %s' % e)
             return None
 
     # 写入cookie
@@ -59,7 +59,7 @@ class RedisAccess:
             
             self.redis_pool.write(keys, cookie_json, self.COOKIE_DB)
         except Exception, e:
-            print '# Redis access write cookie exception:', e
+            Common.log('# Redis access write cookie exception: %s' % e)
 
     # 扫描cookie
     def scan_cookie(self):
@@ -75,7 +75,7 @@ class RedisAccess:
                     cookie_list.append((_time, _cookie))
             return cookie_list
         except Exception, e:
-            print '# Redis access scan cookie exception:', e
+            Common.log('# Redis access scan cookie exception: %s' % e)
             return None
 
     ######################## JM Activity ###################
@@ -93,7 +93,7 @@ class RedisAccess:
             val = self.redis_pool.read(keys, self.JM_ACT_DB)
             return json.loads(val) if val else None
         except Exception, e:
-            print '# Redis access read jm activity exception:', e
+            Common.log('# Redis access read jm activity exception: %s' % e)
             return None
 
     # 写入jm活动
@@ -122,7 +122,7 @@ class RedisAccess:
             act_json = json.dumps(act_dict)
             self.redis_pool.write(keys, act_json, self.JM_ACT_DB)
         except Exception, e:
-            print '# Redis access write jm activity exception:', e
+            Common.log('# Redis access write jm activity exception: %s' % e)
 
     # 扫描jm活动 - 性能不好
     def scan_jmact(self):
@@ -131,9 +131,10 @@ class RedisAccess:
                 key, val = act
                 if not val: continue
                 act_dict       = json.loads(val)
-                print "# scan_jmact %s:" %key, act_dict
+                #Common.log("# scan_jmact %s:" %key)
+                #Common.log(act_dict)
         except Exception, e:
-            print '# Redis access scan jm activity exception:', e
+            Common.log('# Redis access scan jm activity exception: %s' % e)
 
     ######################## JM ITEM ###################
 
@@ -151,7 +152,7 @@ class RedisAccess:
             val = self.redis_pool.read(keys, self.JM_ITEM_DB)
             return json.loads(val) if val else None 
         except Exception, e:
-            print '# Redis access read jm item exception:', e
+            Common.log('# Redis access read jm item exception: %s' % e)
             return None
 
     # 写入jm item
@@ -160,7 +161,7 @@ class RedisAccess:
             item_json = json.dumps(val)
             self.redis_pool.write(keys, item_json, self.JM_ITEM_DB)
         except Exception, e:
-            print '# Redis access write jm item exception:', e
+            Common.log('# Redis access write jm item exception: %s' % e)
 
     # 扫描jm item - 性能不好
     def scan_jmitem(self):
@@ -169,16 +170,11 @@ class RedisAccess:
                 key, val = item
                 if not val: continue
                 item_dict    = json.loads(val)
-                print "# scan_jmitem %s:" %key, item_dict
+                #Common.log("# scan_jmitem %s:" %key)
+                #Common.log(item_dict)
         except Exception as e:
-             print '# Redis access scan jm item exception:', e
+            Common.log('# Redis access scan jm item exception: %s' % e)
 
-
-if __name__ == '__main__1':
-    r = RedisAccess()
-    cookies = r.scan_cookie()
-    for cookie in cookies: print cookie[0]
-    r = None
 
 if __name__ == '__main__':
     pass

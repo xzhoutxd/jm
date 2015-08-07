@@ -144,7 +144,7 @@ class Act():
         for url_str in p.finditer(page):
             i_p += 1
             i_url = url_str.group(1)
-            #print i_url, i_p
+            #Common.log('%s %s' % (i_url, str(i_p)))
             self.itemVal((i_url,i_p))
         return i_p
 
@@ -164,7 +164,7 @@ class Act():
         p_size = 30
         p_index = 0
         a_url = p_url % (str(a_model), str(self.act_id), str(a_model), str(p_id), str(p_size), str(p_index), str(self.act_start_time), str(f_id), str(f_id)) 
-        #print a_url
+        #Common.log(a_url)
         result = self.get_itemjson(a_url, self.act_url, 'ShellCallbackDataShow%s' % (str(f_id)))
         i_p = self.parse_item(result, i_p, p_id, p_index)
         # 分页接口中获取数据
@@ -180,7 +180,7 @@ class Act():
             for page_i in range(2, totalPage+1):
                 p_index = (page_i - 1) * p_size
                 a_url = p_url % (str(a_model), str(self.act_id), str(a_model), str(p_id), str(p_size), str(p_index), str(self.act_start_time), str(f_id), str(f_id))
-                #print a_url
+                #Common.log(a_url)
                 result = self.get_itemjson(a_url, self.act_url, 'ShellCallbackDataShow%s' % (str(f_id)))
                 i_p = self.parse_item(result, i_p, p_id, p_index)
 
@@ -199,8 +199,8 @@ class Act():
             result_data = json.loads(result)
             return ('d', result_data)
         except Exception as e:
-            print '# exception err in get_jsonData load json:',e
-            print '# return string:',result
+            Common.log('# exception err in get_jsonData load json: %s' % e)
+            Common.log('# return string: %s' % result)
             return ('s', result)
 
     def parse_item(self, result, i_p, p_id, p_index):
@@ -320,7 +320,7 @@ class Act():
                 data, i_id, i_name, i_url, i_position = val
             if i_url != '' and i_id != '':
                 i_val = (self.act_id, self.act_name, self.act_url, data, i_id, i_name, i_url, i_position)
-                #print i_val
+                #Common.log(i_val)
                 positions = ''
                 if self.act_itemval_d.has_key(i_id):
                     item = self.act_itemval_d[i_id]
@@ -333,7 +333,8 @@ class Act():
                     if i_id and i_id != '':
                         self.act_itemids.append(i_id)
                     positions = str(i_position)
-                #print self.act_itemval_d[i_id],'PO:'+positions
+                #Common.log(self.act_itemval_d[i_id])
+                #Common.log('PO:'+positions)
 
     # 品牌团页面
     def actPage(self):
@@ -384,7 +385,7 @@ class Act():
                 fout.write(page[3])
                 fout.close()
         except Exception as e:
-            print '# exception err in writeLog info:',e
+            Common.log('# exception err in writeLog info: %s' % e)
 
     # 输出抓取的网页log
     def outItemLog(self):
@@ -412,12 +413,12 @@ class Act():
         return (Common.time_s(self.crawling_time),self.channel_id,self.channel_name,self.act_id,self.act_name,self.act_desc,self.act_platform,self.act_position,self.act_url,self.act_logopic_url,self.act_enterpic_url,self.act_brand_id,act_start_time,act_end_time,self.crawling_beginDate,self.crawling_beginHour)
 
 if __name__ == '__main__':
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     a = Act()
     #val = (1, '\xe7\xbe\x8e\xe5\xa6\x86', 'http://beauty.jumei.com/?from=all_null_index_top_nav_cosmetics&lo=3481&mat=30573', 4, 8830, 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://p0.jmstatic.com/brand/logo_180/3428.jpg', 'http://p0.jmstatic.com/jmstore/image/000/001/1520_std/55b7140b6c894_450_240.jpg?1438065505', '7\xe6\x9c\x8830\xe6\x97\xa5-7\xe6\x9c\x8831\xe6\x97\xa5', '\xe5\x85\xa8\xe5\x9c\xba39\xe5\x85\x83\xe8\xb5\xb7', Common.now())
     val = (1, '\xe7\xbe\x8e\xe5\xa6\x86', 'http://beauty.jumei.com/?from=all_null_index_top_nav_cosmetics&lo=3481&mat=30573', 14, 8828, 'http://hd.jumei.com/act/ppt_perfume_150730.html?from=beauty_onsale_n1_8828_pos14', '\xe9\xad\x85\xe5\x8a\x9b\xe9\xa6\x99\xe6\xb0\xb4\xe5\x9b\xa2', '\xe6\x97\xa0\xe9\xa6\x99\xe4\xb8\x8d\xe5\xa5\xb3\xe4\xba\xba', 'http://p0.jmstatic.com/brand/logo_180/522.jpg', 'http://p0.jmstatic.com/jmstore/image/000/000/494_std/55b6f90e86d5e_600_320.jpg?1438077896', '7\xe6\x9c\x8830\xe6\x97\xa5-7\xe6\x9c\x8831\xe6\x97\xa5', '\xe5\x85\xa8\xe5\x9c\xba2\xe6\x8a\x98\xe8\xb5\xb7', '114681', 1438243718.0, 1438243803.628581)
     a.antPage(val)
-    print '# act', a.outSql()
+    Common.log(a.outSql())
     time.sleep(1)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
  

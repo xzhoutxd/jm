@@ -35,7 +35,7 @@ class DialClient():
             self.client.connect(self.dial_addr)
             self.setConnect(True)
         except:
-            print '# connectClient :', self.dial_addr     
+            Common.log('# connectClient: %s' % str(self.dial_addr))
 
     def isConnect(self):
         return self.is_connect
@@ -61,7 +61,7 @@ class DialClient():
             self.client.sendall(s)
 
         except Exception as e:
-            print '# DailClient send exception: ', e
+            Common.log('# DailClient send exception: %s' % e)
             self.connectClient()
 
     def recv(self):
@@ -71,12 +71,12 @@ if __name__ == "__main__":
     args = sys.argv
     args = ['DialClient', '3_act', '192.168.7.1', 'ikuai']
     if len(args) < 3:
-        print 'python DialClient module ip tag'
+        Common.log('python DialClient module ip tag')
         exit()
 
     # 处理输入参数
     _module, _ip, _tag = args[1], args[2], args[3]
-    print '# DialClient :',  _module, _ip, _tag
+    Common.log('# DialClient: %s %s %s' % (str(_module), str(_ip), str(_tag)))
 
     c = DialClient()
     c_time = Common.now_ss() 

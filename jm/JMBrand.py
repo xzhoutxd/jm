@@ -13,6 +13,7 @@ from JMWorker import JMWorker
 sys.path.append('../base')
 import Common as Common
 import Config as Config
+import Logger as Logger
 from RetryCrawler import RetryCrawler
 sys.path.append('../db')
 from MysqlAccess import MysqlAccess
@@ -63,9 +64,9 @@ class JMBrand():
 
                     # 清空act redis队列
                     self.act_queue.clearQ()
-                    print '# channel queue end:',time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+                    Common.log('# channel queue end')
                 else:
-                    print '# not find channel...'
+                    Common.log('# not find channel...')
 
             # channel acts
             obj = 'channel'
@@ -86,40 +87,43 @@ class JMBrand():
             act_val = self.work.items
             if act_val and len(act_val.keys()) > 0:
                 if act_val.has_key('sale'):
-                    print '# act on sale nums:', len(act_val['sale'])
+                    Common.log('# act on sale nums: %d'%len(act_val['sale']))
                     act_val_list.extend(act_val['sale'])
                 if act_val.has_key('coming'):
-                    print '# act will coming nums:', len(act_val['coming'])
+                    Common.log('# act will coming nums: %d'%len(act_val['coming']))
                     act_val_list.extend(act_val['coming'])
 
             # 保存到redis队列
             self.act_queue.putlistQ(act_val_list)
-            print '# act queue end:',time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            Common.log('# act queue end')
 
             #if self.m_type == 'm':
             #    val = (Common.add_hours(self.begin_time, -2),Common.add_hours(self.begin_time, -2),Common.add_hours(self.begin_time, -1))
             #    # 删除Redis中上个小时结束的活动
             #    _acts = self.mysqlAccess.selectJMActEndLastOneHour(val)
-            #    print '# end acts num:',len(_acts)
+            #    Common.log('# end acts num: %d' % len(_acts))
             #    self.work.delAct(_acts)
             #    # 删除Redis中上个小时结束的商品
             #    _items = self.mysqlAccess.selectJMItemEndLastOneHour(val)
-            #    print '# end items num:',len(_items)
+            #    Common.log('# end items num: %d' % len(_items))
             #    self.work.delItem(_items)
         except Exception as e:
-            print '# antpage error :',e
+            Common.log('# JMbrand antpage error: %s'%e)
             Common.traceback_log()
 
 if __name__ == '__main__':
+    loggername = 'brand'
+    filename = 'add_channel_%s' % (time.strftime("%Y%m%d%H", time.localtime()))
+    Logger.config_logging(loggername, filename)
     args = sys.argv
     #args = ['JMBrand','m']
     if len(args) < 2:
-        print '#err not enough args for JMBrand...'
+        Common.log('#err not enough args for JMBrand...')
         exit()
     # 是否是分布式中主机
     m_type = args[1]
     j = JMBrand(m_type)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log('JMBrand start')
     j.antPage()
     time.sleep(1)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log('JMBrand end')

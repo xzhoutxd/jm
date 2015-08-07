@@ -310,7 +310,7 @@ class Item():
                             if i_gift.has_key('show_name'):
                                 self.item_promotions.append(i_gift['show_name'])
             except Exception as e:
-                print '# itemGlobalDealinfo,exception err in load json:',e
+                Common.log('# itemGlobalDealinfo,exception err in load json: %s' % e)
         
     def itemProduct(self):
         page = self.item_page
@@ -426,7 +426,7 @@ class Item():
         #callback_s = '1112' + re.sub('\.','',str('%17.16f' % random.random())) + '_' + str(time_n+1)
         callback_s = self.callback_s('jQuery', '1112', time_n)
         a_url = 'http://www.jumei.com/i/static/getDealInfoByHashId?hash_id=%s&brand_id=%s&callback=%s&_=%s' % (self.item_id,self.item_brand_id,callback_s,str(time_n))
-        #print a_url
+        #Common.log(a_url)
         page = self.crawler.getData(a_url, self.item_url)
         m = re.search(r'\(({.+?})\)', page, flags=re.S)
         if m:
@@ -461,7 +461,7 @@ class Item():
                     else:
                         self.item_promotions = i_val['promo_sale_text']
             except Exception as e:
-                print '# itemProductDealinfo,exception err in load json:',e
+                Common.log('# itemProductDealinfo,exception err in load json: %s' % e)
 
 
     def itemProductKoubei(self):
@@ -480,7 +480,7 @@ class Item():
         time_n = int(float(Common.now())*1000)
         callback_s = self.callback_s('jQuery', '1112', time_n)
         a_url = 'http://koubei.jumei.com/Ajax/getDealDatasByProductId?product_id=%s&verify_code=%s&time=%s&callback=%s&_=%s' % (self.item_product_id,verify_code,time_s,callback_s,str(time_n))
-        #print a_url
+        #Common.log(a_url)
         result = self.crawler.getData(a_url, self.item_url)
         if result:
             m = re.search(r'"dealCommentNumber":"(.+?)",', result, flags=re.S)
@@ -510,11 +510,13 @@ class Item():
 
             if type(self.crawler.history) is list and len(self.crawler.history) != 0 and re.search(r'302',str(self.crawler.history[0])):
                 if not self.itempage_judge(page):
-                    print '#crawler history:',self.crawler.history
+                    Common.log('#crawler history:')
+                    Common.log(self.crawler.history)
                     raise Common.NoPageException("# itemPage: not find item page, redirecting to other page,id:%s,item_url:%s"%(str(self.item_id), self.item_url))
 
             if not page or page == '': 
-                print '#crawler history:',self.crawler.history
+                Common.log('#crawler history:')
+                Common.log(self.crawler.history)
                 raise Common.InvalidPageException("# itemPage: find item page empty,id:%s,item_url:%s"%(str(self.item_id), self.item_url))
             self.item_page = page
         else:
@@ -539,10 +541,8 @@ class Item():
                     self.item_pageData = json.loads(self.item_pageData)
                     self.itemDict()
                 except Exception as e:
-                    print '# item itemParser json loads error:',self.item_pageData
+                    Common.log('# item itemParser json loads error: %s' % self.item_pageData)
                     self.itemString()
-            #else:
-            #    print '# item itemParser item_pageData is empty...'
         else:
             self.itemDict()
 
@@ -929,7 +929,7 @@ class Item():
                 fout.write(page[3])
                 fout.close()
         except Exception as e:
-            print '# exception err in writeLog info:',e
+            Common.log('# exception err in writeLog info: %s' % e)
 
     # 输出抓取的网页log
     def outItemLog(self):
@@ -975,13 +975,13 @@ def test():
     pass
 
 if __name__ == '__main__':
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     i = Item()
     val = (8830, '\xe6\x97\xa5\xe6\x9c\xac\xe5\x8f\xa3\xe8\x85\x94\xe5\x9b\xa2', 'http://hd.jumei.com/act/plt_ribenkouqiang_150730.html?from=beauty_coming_8830_pos4', {'original_price': '0', 'discounted_price': '39', 'deposit': '0.00', 'payment_start_time': '0', 'is_new': 1, 'promo_sale_text': [], 'product_report_rating': '5.0', 'brand_id': '3428', 'is_stock_split': '0', 'pic_url': 'http://p1.jmstatic.com/product/001/608/1608006_std/1608006_350_350.jpg', 'category': 'retail_global', 'commission_rate': '0.0000', 'chinese_name': u'\u72ee\u738b', 'category_v3_1': '107', 'sku_max_market_price': '89', 'min_discount': 4.4, 'medium_name': u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'hash_id': 'ht150730p1608006t2', 'status': '1', 'sku_min_price': '39.00', 'payment_end_time': '0', 'real_buyer_number': '0', 'short_name': u'\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u5957\u7ec4', 'wish_number': '9582', 'start_time': '1438221600', 'baoyou': 0, 'discount': '0', 'sale_forms': 'normal', 'sellable': 1, 'spu_area_code': '19', 'aca': 0, 'is_published_price': '1', 'promo': 'new', 'product_id': '1608006', 'product_reports_number': '0', 'friendly_name': u'\u72ee\u738b(LION)', 'is_exist_225': 0, 'end_time': '1438307999', 'category_id': '94', 'spu_abroad_price': '1.00', 'buyer_number': '0'}, 'ht150730p1608006t2', u'\u672c\u5343\u4e07\u4eba\u7684\u7693\u9f7f\u5965\u79d8\uff0c\u8001\u4eba\u5c0f\u5b69\u90fd\u5728\u7528\u72ee\u738b\u6e05\u723d\u8584\u8377\u9175\u7d20\u7259\u818f\u3002', 'http://item.jumeiglobal.com/ht150730p1608006t2.html?from=plt_ribenkouqiang_150730_pos_2_121&status=zs', 12, Common.now())
     i.antPage(val)
     i_val = i.outTuple()
     for s in i_val:
-        print s
+        Common.log(s)
     time.sleep(1)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 

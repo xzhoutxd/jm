@@ -26,8 +26,7 @@ class MongofsAccess():
             db_name = "jm" + c
             self.mongo_db.insertPage(db_name, c, data)
         except Exception, e:
-            print '# insertJMPages exception:', e
-            traceback.print_exc()
+            Common.log('# insertJMPages exception: %s' % e)
 
     # 删除网页
     def removeJMPage(self, _key):
@@ -47,8 +46,10 @@ class MongofsAccess():
         for pg in self.mongo_db.findPages(db_name, c):
             _key   = pg['key']
             _pages = pg['pages']
-            print _key,_pages
-            #for k in _pages.keys(): print _key, k
+            #Common.log(_key)
+            #Common.log(_pages)
+            #for k in _pages.keys(): 
+            #    Common.log(k)
 
     # 创建索引
     def crtJMIndex(self, c):
@@ -65,15 +66,3 @@ class MongofsAccess():
 
 if __name__ == '__main__':
     pass
-    #m = MongofsAccess()
-    #m.removeJMPage("2015050618_4_1_item_groupposition_10000006759307")
-    #vals = m.findJMPage("2015050618_4_1_item_groupposition_10000006759307")
-    #print vals
-
-    #m.scanJMPage("20150506")
-    #vals = m.findTBPage('20150303151645_1_61773004_43790383280')
-    #vals = m.findTBPage('20150308003057_1_58501945')
-    #if vals and vals.has_key('pages'):
-    #    _dict = vals['pages']
-    #    for (_tag, _content) in _dict.items():
-    #        print _tag, _content.encode('utf8', 'ignore')

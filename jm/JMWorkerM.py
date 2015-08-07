@@ -22,7 +22,7 @@ class JMWorkerM(ProcessMgr):
 if __name__ == '__main__':
     # 抓取开始时间
     begin_time = Common.now()
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     args = sys.argv
     if len(args) < 4:
         print '#err not enough args for JMWorkerM...'
@@ -45,5 +45,5 @@ if __name__ == '__main__':
     m.createProcess((obj, crawl_type, a_val))
     m.run()
     time.sleep(5)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 

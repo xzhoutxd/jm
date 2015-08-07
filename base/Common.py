@@ -10,6 +10,7 @@ import datetime
 import calendar
 import urllib
 import traceback
+import Logger as Logger
 
 # defined exception
 class InvalidParameterException(Exception):
@@ -73,13 +74,39 @@ class RetryException(Exception):
     pass
 
 def traceback_log():
-    print '#####--Traceback Start--#####'
-    tp,val,td = sys.exc_info()
-    for file, lineno, function, text in traceback.extract_tb(td):
-        print "exception traceback err:%s,line:%s,in:%s"%(file, lineno, function)
-        print text
-    print "exception traceback err:%s,%s,%s"%(tp,val,td)
-    print '#####--Traceback End--#####'
+    if Logger.logger:
+        Logger.logger.info('#####--Traceback Start--#####')
+        tp,val,td = sys.exc_info()
+        for file, lineno, function, text in traceback.extract_tb(td):
+            Logger.logger.info('exception traceback err:%s,line:%s,in:%s'%(file, lineno, function))
+            Logger.logger.info(text)
+        Logger.logger.info('exception traceback err:%s,%s,%s'%(tp,val,td))
+        Logger.logger.info('#####--Traceback End--#####')
+    else:
+        print '#####--Traceback Start--#####'
+        tp,val,td = sys.exc_info()
+        for file, lineno, function, text in traceback.extract_tb(td):
+            print "exception traceback err:%s,line:%s,in:%s"%(file, lineno, function)
+            print text
+        print "exception traceback err:%s,%s,%s"%(tp,val,td)
+        print '#####--Traceback End--#####'
+
+def log(e, level='INFO'):
+    if Logger.logger:
+        if level.upper() == 'INFO':
+            Logger.logger.info(e)
+        elif level.upper() == 'DEBUG':
+            Logger.logger.debug(e)
+        elif level.upper() == 'WARNING':
+            Logger.logger.warn(e)
+        elif level.upper() == 'ERROR':
+            Logger.logger.error(e)
+        elif level.upper() == 'CRITICAL':
+            Logger.logger.critical(e)
+        else:
+            Logger.logger.info(e)
+    else:
+        print e
 
 
 # 单体模式

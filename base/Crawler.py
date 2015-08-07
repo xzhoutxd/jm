@@ -60,7 +60,6 @@ class Crawler:
         return _header
 
     def setCookie(self, _cookie):
-        #print '# setCookie :', _cookie
         self.session_cookie = _cookie
 
     def useCookie(self, flag=False):

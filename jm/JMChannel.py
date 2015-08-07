@@ -60,7 +60,7 @@ class Channel():
         if self.channel_id == 1:
             self.beauty()
         elif self.channel_id == 2:
-            print self.channel_name, self.channel_url
+            Common.log('%s %s' % (self.channel_name, self.channel_url))
             self.jumeiglobal()
 
     def beauty(self):
@@ -69,7 +69,7 @@ class Channel():
             m = re.search(r'RM_SERVER_TIME=(.+?);', self.channel_page, flags=re.S)
             if m:
                 server_time = float(m.group(1))
-            print '# onsale'
+            Common.log('# onsale')
             # onsale
             #m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div class="zhuang_title special_will_title">', self.channel_page, flags=re.S)
             m = re.search(r'<div id="container">.+?<div id="special_today" class="one_list">(.+?)<div id="special_will">', self.channel_page, flags=re.S)
@@ -105,17 +105,16 @@ class Channel():
                         act_id = int(m.group(1))
 
                     a_val = (self.channel_id, self.channel_name, self.channel_url, s_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, act_diff, server_time, self.crawling_begintime)
-                    print a_val
+                    Common.log(a_val)
                     self.channel_sale_acts.append(a_val)
                     s_p += 1
                     
-            print '# will coming soon'
+            Common.log('# will coming soon')
             # will
             m = re.search(r'<div id="container">.+?<div id="special_will">(.+?)</div>\s+</div>\s+<div class="lineblank"></div>', self.channel_page, flags=re.S)
             if m:
                 w_p = 1
                 will_acts_info = m.group(1)
-                #print will_acts_info
                 p = re.compile(r'<div class="two_imgbox">\s+<a href="(.+?)".*?>\s*<img src="(.+?)".*?/>\s*</a>.+?<div class="item_flow">\s+<div.+?diff="(.+?)">.+?</div>\s+<a.+?>(.+?)</a>', flags=re.S)
                 for act_info in p.finditer(will_acts_info):
                     act_url, act_intro, act_pic_url, act_logo_url, act_name, act_desc, act_discounts, act_times, act_stime = '', '', '', '', '', '', '', '', ''
@@ -138,7 +137,7 @@ class Channel():
                     if m:
                         act_id = int(m.group(1))
                     a_val = (self.channel_id, self.channel_name, self.channel_url, w_p, act_id, act_url, act_name, act_desc, act_logo_url, act_pic_url, act_times, act_discounts, act_stime, server_time, self.crawling_begintime)
-                    print a_val
+                    Common.log(a_val)
                     self.channel_coming_acts.append(a_val)
                     w_p += 1
 
@@ -172,7 +171,7 @@ class Channel():
             p = re.compile(r'(<div class="product_introduce clearfix".+?>.+?<div class="pro_left">.+?</div>\s+<div class="pro_right" target="_blank">\s+<a.+?>.+?</a>\s+<a.+?>.+?</a>\s+</div>\s+</div>)', flags=re.S)
             for info in p.finditer(self.channel_page):
                 val = (self.channel_id, self.channel_name, self.channel_url, info.group(1), i_p)
-                print val
+                Common.log(val)
                 self.channel_sale_items.append(val)
                 i_p += 1
         return (False, i_p)
@@ -180,7 +179,7 @@ class Channel():
     def jumeiglobalAjax(self, i_p, findex, psize=20):
         a_back = 'global_load_callback'
         a_url = 'http://www.jumeiglobal.com/ajax_new/getDealsByPage?type=new&pagesize=%s&index=%s&page=index&callback=%s' % (str(psize), str(findex), a_back)
-        #print '# ajaxUrl:',a_url
+        #Common.log('# ajaxUrl: %s' % a_url)
         r_page = self.retrycrawler.getData(a_url, self.channel_url)
         if not r_page or r_page == '': raise Common.InvalidPageException("# jumeiglobalAjax: get item json data empty, url:%s."%(a_url))
         m = re.search(r'%s\((.+?)\)$' % a_back, r_page, flags=re.S)
@@ -198,7 +197,7 @@ class Channel():
         if r_data and r_data.has_key('list'):
             for item in r_data['list']:
                 val = (self.channel_id, self.channel_name, self.channel_url, item, i_p)
-                print val
+                Common.log(val)
                 self.channel_sale_items.append(val)
                 i_p += 1
             if len(r_data['list']) == 0:
@@ -227,7 +226,7 @@ class Channel():
             p = re.compile(r'({"image".+?"shipping_system_id":".+?"})', flags=re.S)
             for info in p.finditer(r_data):
                 val = (self.channel_id, self.channel_name, self.channel_url, info.group(1), i_p)
-                print val
+                Common.log(val)
                 self.channel_sale_items.append(val)
                 r_len += 1
                 i_p += 1
@@ -267,11 +266,11 @@ class Channel():
 
 
 if __name__ == '__main__':
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
     c = Channel()
     #val = (1,'美妆','http://beauty.jumei.com/?from=all_null_index_top_nav_cosmetics&lo=3481&mat=30573',Common.now())
     val = (2,'聚美极速免税店','www.jumeiglobal.com',Common.now())
     c.antPage(val)
     time.sleep(1)
-    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    Common.log(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 

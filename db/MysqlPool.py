@@ -1,8 +1,12 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/env python
 
+from sys import path
+path.append(r'../base')
+
 import MySQLdb
 from DBUtils.PooledDB import PooledDB
+import Common as Common
 
 class MysqlPool:
     '''A class of connect pool to Mysql Database'''
@@ -27,7 +31,8 @@ class MysqlPool:
             conn.close()
             return results
         except Exception as e:
-            print '# MyDatabase select exception :', e, sql, args
+            Common.log('# MyDatabase select exception: %s %s' % (e, sql))
+            Common.log(args)
             return None
 
     def execute(self, sql, args=None):
@@ -38,7 +43,8 @@ class MysqlPool:
             cur.close()
             conn.close()
         except Exception as e:
-            print '# MyDatabase execute exception :', e, sql, args
+            Common.log('# MyDatabase execute exception: %s %s' % (e, sql))
+            Common.log(args)
 
     def executemany(self, sql, args_list=[]):
         try:
@@ -48,7 +54,8 @@ class MysqlPool:
             cur.close()
             conn.close()
         except Exception as e:
-            print '# MyDatabase executemany exception :', e, sql, args_list
+            Common.log('# MyDatabase executemany exception: %s %s' % (e, sql))
+            Common.log(args_list)
 
 # mysql database pool
 mysql_config = {

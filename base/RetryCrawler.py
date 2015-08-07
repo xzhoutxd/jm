@@ -34,7 +34,7 @@ class RetryCrawler():
             _module = '%s_%s' %(_type, _obj)
             self.dial_client.send((_module, self._ip, self._tag))
         except Exception as e:
-            print '# To dial router exception :', e
+            Common.log('# To dial router exception: %s' % e)
 
     def getData(self, url, refers='', max_retry=20):
         page = ''
@@ -47,28 +47,28 @@ class RetryCrawler():
                 if retry >= max_retry:
                     break
                 retry += 1
-                print '# Invalid page exception:',e
+                Common.log('# Invalid page exception: %s' % e)
                 time.sleep(self.w_time*retry)
             except Common.DenypageException as e:
                 if retry >= max_retry:
                     break
                 retry += 1
-                print '# Deny page exception:',e
+                Common.log('# Deny page exception: %s' % e)
                 # 重新拨号
                 try:
                     self.dialRouter(4, 'chn')
                 except Exception as e:
-                    print '# DailClient Exception err:', e
+                    Common.log('# DailClient Exception err: %s' % e)
                 time.sleep(random.uniform(10,30))
 
             except Common.SystemBusyException as e:
                 if retry >= max_retry:
                     break
                 retry += 1
-                print '# System busy exception:',e
+                Common.log('# System busy exception: %s' % e)
                 time.sleep(self.w_time*retry)
             except Exception as e:
-                print '# exception err in retry crawler:',e
+                Common.log('# exception err in retry crawler: %s' % e)
                 if str(e).find('Read timed out') != -1:
                     if retry >= max_retry:
                         break
@@ -83,7 +83,7 @@ class RetryCrawler():
                     try:
                         self.dialRouter(4, 'chn')
                     except Exception as e:
-                        print '# DailClient Exception err:', e
+                        Common.log('# DailClient Exception err: %s' % e)
                     time.sleep(random.uniform(10,30))
                 else:
                     break

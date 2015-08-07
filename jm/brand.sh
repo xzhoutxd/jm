@@ -18,7 +18,8 @@ LOGDIR=`pwd`
 LOGFILE=$LOGDIR/logs/jm/brand/add_channel_${DATESTR}.log
 
 cd $DIR
-/usr/local/bin/python $DIR/JMBrand.py $m_type > $LOGFILE
+#/usr/local/bin/python $DIR/JMBrand.py $m_type > $LOGFILE
+/usr/local/bin/python $DIR/JMBrand.py $m_type
 
 # process queue
 p_num=2
@@ -33,5 +34,6 @@ LOGDIR=`pwd`
 LOGFILE=$LOGDIR/logs/jm/brand/add_brands_${DATESTR}.log
 
 cd $DIR
-/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type > $LOGFILE
+#/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type > $LOGFILE
+/usr/local/bin/python $DIR/JMWorkerM.py $p_num $obj $crawl_type
 
