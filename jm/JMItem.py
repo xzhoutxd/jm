@@ -123,7 +123,7 @@ class Item():
         self.act_url = Common.fix_url(act_url)
         # 商品所在活动位置
         self.item_position = item_position
-        # 商品聚划算链接
+        # 商品链接
         self.item_url = Common.fix_url(item_url)
         # 商品id
         self.item_id = item_id
@@ -137,9 +137,9 @@ class Item():
         self.crawling_beginHour = time.strftime("%H", time.localtime(self.crawling_begintime))
 
 
-    # 聚划算商品页信息
+    # 商品页信息
     def itemConfig(self):
-        # 聚划算商品页信息
+        # 商品页信息
         self.itemPage()
         page = self.item_page
 
